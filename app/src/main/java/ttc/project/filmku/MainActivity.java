@@ -2,12 +2,9 @@ package ttc.project.filmku;
 
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.PersistableBundle;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -15,7 +12,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,13 +21,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.zip.Inflater;
 
 public class MainActivity extends AppCompatActivity {
     private final static String TAG_LIFECYCLE = "Lifecycle";
-    private TextView tvTotalResult;
     private RecyclerView rvFilm;
-    ArrayList<String> titles = new ArrayList<>();
+    ArrayList<String> titles = new ArrayList<>(), poster = new ArrayList<>(), movieID = new ArrayList<>();
     private FilmAdapter adapter;
 
     //    TODO (5) Buat variable text view tv_total_result yg dibuat di layout
@@ -46,37 +40,29 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private String getTotalResult(String jsonData){
-        try {
-            JSONObject dataJson = new JSONObject(jsonData);
-            String total_result = dataJson.getString("total_results");
-            return total_result;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private ArrayList<String> getTitles(String jsonData){
-        ArrayList<String> results = new ArrayList<>();
+    private void getData(String jsonData){
         try {
             JSONObject dataJson = new JSONObject(jsonData);
             JSONArray titlesJsonArray = dataJson.getJSONArray("results");
             for(int i=0; i<titlesJsonArray.length(); i++){
                 JSONObject film_item = titlesJsonArray.getJSONObject(i);
+                Uri uri = NetworkUtils.buildImageUrl();
                 String title = film_item.getString("title");
-                results.add(title);
+                String image = uri.toString()+film_item.getString("poster_path");
+                String movie_id = film_item.getString("id");
+                titles.add(title);
+                poster.add(image);
+                movieID.add(movie_id);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return results;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==R.id.getPopular){
-            Uri uri = NetworkUtils.buildPopularMovieUrl();
+        if(item.getItemId()==R.id.getNowPlaying){
+            Uri uri = NetworkUtils.buildMovieListUrl("popular");
             new NetworkTask().execute(uri);
         }
         return super.onOptionsItemSelected(item);
@@ -87,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(Uri... uris) {
             URL popularURL = null;
             try {
-                popularURL = new URL(NetworkUtils.buildPopularMovieUrl().toString());
+                popularURL = new URL(uris[0].toString());
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
@@ -102,9 +88,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            tvTotalResult.setText(getTotalResult(s));
-            titles = getTitles(s);
-            adapter.swapData(titles);
+            titles = new ArrayList<>();
+            poster = new ArrayList<>();
+            movieID = new ArrayList<>();
+            getData(s);
+            adapter.swapData(titles, poster, movieID);
             adapter.notifyDataSetChanged();
         }
     }
@@ -185,13 +173,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Log.d(TAG_LIFECYCLE, "OnCreate");
 
-        tvTotalResult = (TextView) findViewById(R.id.tvTotalResult);
-
         rvFilm = (RecyclerView) findViewById(R.id.rvFilm);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        LinearLayoutManager layoutManager = new GridLayoutManager(this, 2);
         adapter = new FilmAdapter(this);
         rvFilm.setLayoutManager(layoutManager);
         rvFilm.setAdapter(adapter);
+
+        Uri uri = NetworkUtils.buildMovieListUrl("now_playing");
+        new NetworkTask().execute(uri);
     }
 
     @Override

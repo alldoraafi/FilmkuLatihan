@@ -10,17 +10,12 @@
     android:layout_height="match_parent"
     tools:context="ttc.project.filmku.MainActivity">
 
-    <TextView
-        android:id="@+id/tvTotalResult"
-        android:textSize="24sp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="CONTOH"/>
-
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvFilm"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></android.support.v7.widget.RecyclerView>
+        android:layout_height="0dp"
+        android:layout_weight="1">
+    </android.support.v7.widget.RecyclerView>
 
     <!-- TODO (3) Buat res directory menu -->
     <!-- TODO (4) Buat file menu main_menu -->

@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 
 /**
@@ -15,14 +17,16 @@ import java.util.ArrayList;
 
 public class FilmAdapter extends RecyclerView.Adapter<FilmViewHolder> {
     Context mContext;
-    ArrayList<String> titles;
+    ArrayList<String> titles, poster, movieID;
 
     public FilmAdapter(Context mContext) {
         this.mContext = mContext;
     }
 
-    public void swapData(ArrayList<String> titles){
+    public void swapData(ArrayList<String> titles, ArrayList<String> poster, ArrayList<String> movieID){
         this.titles = titles;
+        this.poster = poster;
+        this.movieID = movieID;
     }
 
     @Override
@@ -33,11 +37,12 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmViewHolder> {
 
     @Override
     public void onBindViewHolder(FilmViewHolder holder, int position) {
-        holder.tvPosition.setText(String.valueOf(position+1));
         holder.tvFilmName.setText(titles.get(position));
+        Picasso.with(mContext).load(poster.get(position)).placeholder(R.drawable.loading2).into(holder.ivPoster);
 
         final Intent intent = new Intent(mContext, DetailActivity.class);
         intent.putExtra("film_title", titles.get(position));
+        intent.putExtra("movie_id", movieID.get(position));
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

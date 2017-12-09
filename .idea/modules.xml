@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://C:\Users\AR-Laptop\AndroidStudioProjects\FilmkuLatihan-master\Filmku.iml" filepath="C:\Users\AR-Laptop\AndroidStudioProjects\FilmkuLatihan-master\Filmku.iml" />
-      <module fileurl="file://$PROJECT_DIR$/FilmkuLatihan-master.iml" filepath="$PROJECT_DIR$/FilmkuLatihan-master.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/FilmkuLatihan.iml" filepath="$PROJECT_DIR$/.idea/FilmkuLatihan.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
