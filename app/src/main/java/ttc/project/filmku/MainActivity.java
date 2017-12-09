@@ -1,5 +1,7 @@
 package ttc.project.filmku;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.PersistableBundle;
@@ -26,9 +28,11 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
     private final static String TAG_LIFECYCLE = "Lifecycle";
     private RecyclerView rvFilm;
-    ArrayList<String> titles = new ArrayList<>(), poster = new ArrayList<>(), movieID = new ArrayList<>();
+    ArrayList<String> titles = new ArrayList<>(), poster = new ArrayList<>(), movieID = new ArrayList<>(), favoritesID = new ArrayList<>();
     private FilmAdapter adapter;
     private MenuItem menuTitle;
+    private SQLiteDatabase mDb;
+    private DatabaseHelper dbHelper;
 
     //    TODO (5) Buat variable text view tv_total_result yg dibuat di layout
     //    TODO (6) Override onCreateOptionsMenu dan inflate menu yang dibuat
@@ -62,6 +66,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void getFavorites(){
+        Cursor mCursor = getAllFavorites();
+        titles.clear();movieID.clear();poster.clear();favoritesID.clear();
+        for(int i = 0; i<mCursor.getCount(); i++){
+            mCursor.moveToPosition(i);
+            int titleColumnIndex = mCursor.getColumnIndex(DatabaseContract.FavoritesEntry.COLUMN_TITLE);
+            int idColumnIndex = mCursor.getColumnIndex(DatabaseContract.FavoritesEntry.COLUMN_ID);
+            int posterColumnIndex = mCursor.getColumnIndex(DatabaseContract.FavoritesEntry.COLUMN_POSTER);
+
+            titles.add(mCursor.getString(titleColumnIndex));
+            movieID.add(mCursor.getString(idColumnIndex));
+            poster.add(mCursor.getString(posterColumnIndex));
+            favoritesID.add(mCursor.getString(idColumnIndex));
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
@@ -80,6 +100,12 @@ public class MainActivity extends AppCompatActivity {
             case R.id.getUpcoming:
                 menuTitle.setTitle("Upcoming Movies");
                 setContent("upcoming");
+                break;
+            case R.id.getFavorites:
+                menuTitle.setTitle("Favorites");
+                getFavorites();
+                adapter.swapData(titles, poster, movieID, favoritesID);
+                adapter.notifyDataSetChanged();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -114,11 +140,14 @@ public class MainActivity extends AppCompatActivity {
             poster = new ArrayList<>();
             movieID = new ArrayList<>();
             getData(s);
-            adapter.swapData(titles, poster, movieID);
+            adapter.swapData(titles, poster, movieID, favoritesID);
             adapter.notifyDataSetChanged();
         }
     }
 
+    public Cursor getAllFavorites(){
+        return mDb.query(DatabaseContract.FavoritesEntry.TABLE_NAME, null, null, null, null, null, null);
+    }
 
 
     //IAK1 connect to the internet
@@ -194,6 +223,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.d(TAG_LIFECYCLE, "OnCreate");
+
+        dbHelper = new DatabaseHelper(this);
+        mDb = dbHelper.getReadableDatabase();
+        getFavorites();
 
         rvFilm = (RecyclerView) findViewById(R.id.rvFilm);
         LinearLayoutManager layoutManager = new GridLayoutManager(this, 2);

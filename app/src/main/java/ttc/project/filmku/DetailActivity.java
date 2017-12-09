@@ -1,8 +1,10 @@
 package ttc.project.filmku;
 
-import android.app.SearchManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -23,19 +26,23 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
 public class DetailActivity extends AppCompatActivity {
     private double rating;
-    private String overview, language, release, image, homepage, tagline;
+    private String movie_id, title, overview, language, release, image, homepage, tagline, poster;
     private ArrayList<String> genres=new ArrayList<>();
     private TextView tvOverview, tvLanguage, tvGenres, tvRelease, tvTagline;
     private ImageView ivBack;
     private RatingBar rbRating;
     private Button btHomepage;
+    private MaterialFavoriteButton fav;
+    private boolean favorited = false;
+
+    private SQLiteDatabase mDb;
+    private DatabaseHelper dbHelper;
 
     private void getData(String jsonData){
         try {
@@ -48,6 +55,7 @@ public class DetailActivity extends AppCompatActivity {
             homepage = film_item.getString("homepage");
             tagline = film_item.getString("tagline");
             rating = film_item.getDouble("vote_average")/2;
+            poster = uri.toString()+film_item.getString("poster_path");
 
             JSONArray genresJsonArray = film_item.getJSONArray("genres");
             for (int i=0; i<genresJsonArray.length(); i++){
@@ -59,6 +67,21 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
+    private void getFavorites(){
+        Cursor mCursor = getAllFavorites();
+        for (int i=0; i<mCursor.getCount(); i++){
+            mCursor.moveToPosition(i);
+            int idColumnIndex = mCursor.getColumnIndex(DatabaseContract.FavoritesEntry.COLUMN_ID);
+            Log.d("FAV", mCursor.getString(idColumnIndex));
+            if (mCursor.getString(idColumnIndex)==movie_id){
+                fav.setFavorite(true);
+            }
+        }
+    }
+
+    public Cursor getAllFavorites(){
+        return mDb.query(DatabaseContract.FavoritesEntry.TABLE_NAME, null, null, null, null, null, null);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -73,8 +96,15 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        Log.d("Created", "OnCreate");
+        title = getIntent().getStringExtra("film_title");
+        movie_id = getIntent().getStringExtra("movie_id");
 
-        getSupportActionBar().setTitle(getIntent().getStringExtra("film_title"));
+        getSupportActionBar().setTitle(title);
+
+        dbHelper = new DatabaseHelper(this);
+        mDb = dbHelper.getWritableDatabase();
+        getFavorites();
 
         tvOverview = findViewById(R.id.tvOverview);
         tvOverview.setMovementMethod(new ScrollingMovementMethod());
@@ -96,8 +126,24 @@ public class DetailActivity extends AppCompatActivity {
             }
         });
 
-        Uri uri = NetworkUtils.buildMovieUrl(getIntent().getStringExtra("movie_id"));
-        Log.d("id",getIntent().getStringExtra("movie_id"));
+        fav = findViewById(R.id.fav);
+        fav.setOnFavoriteChangeListener(new MaterialFavoriteButton.OnFavoriteChangeListener() {
+            @Override
+            public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
+                if (favorite){
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(DatabaseContract.FavoritesEntry.COLUMN_TITLE, title);
+                    contentValues.put(DatabaseContract.FavoritesEntry.COLUMN_ID, movie_id);
+                    contentValues.put(DatabaseContract.FavoritesEntry.COLUMN_POSTER, poster);
+                    long result = mDb.insert(DatabaseContract.FavoritesEntry.TABLE_NAME, null, contentValues);
+                    if (result>0) finish();
+                }else {
+                    mDb.delete(DatabaseContract.FavoritesEntry.TABLE_NAME, DatabaseContract.FavoritesEntry.COLUMN_ID, new String[] {movie_id});
+                }
+            }
+        });
+
+        Uri uri = NetworkUtils.buildMovieUrl(movie_id);
         new NetworkTask(this).execute(uri);
     }
 

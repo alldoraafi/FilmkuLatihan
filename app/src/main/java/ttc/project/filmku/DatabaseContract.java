@@ -11,5 +11,6 @@ public class DatabaseContract {
         public static final String TABLE_NAME = "favorites_table";
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_ID = "id";
+        public static final String COLUMN_POSTER = "poster";
     }
 }

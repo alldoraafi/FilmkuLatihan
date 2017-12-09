@@ -17,16 +17,17 @@ import java.util.ArrayList;
 
 public class FilmAdapter extends RecyclerView.Adapter<FilmViewHolder> {
     Context mContext;
-    ArrayList<String> titles, poster, movieID;
+    ArrayList<String> titles, poster, movieID, favoritesID;
 
     public FilmAdapter(Context mContext) {
         this.mContext = mContext;
     }
 
-    public void swapData(ArrayList<String> titles, ArrayList<String> poster, ArrayList<String> movieID){
+    public void swapData(ArrayList<String> titles, ArrayList<String> poster, ArrayList<String> movieID, ArrayList<String> favoritesID){
         this.titles = titles;
         this.poster = poster;
         this.movieID = movieID;
+        this.favoritesID = favoritesID;
     }
 
     @Override

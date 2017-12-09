@@ -21,4 +21,8 @@
         android:id="@+id/getUpcoming"
         android:title="Upcoming"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/getFavorites"
+        android:title="Favorites"
+        app:showAsAction="never"/>
 </menu>
