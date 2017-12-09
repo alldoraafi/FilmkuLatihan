@@ -9,9 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -27,10 +29,12 @@ import java.net.URL;
 import java.util.ArrayList;
 
 public class DetailActivity extends AppCompatActivity {
+    private double rating;
     private String overview, language, release, image, homepage, tagline;
-    private ArrayList<String> genres;
-    private TextView tvFilmName, tvOverview, tvLanguage, tvGenres, tvRelease, tvRating, tvTagline;
+    private ArrayList<String> genres=new ArrayList<>();
+    private TextView tvOverview, tvLanguage, tvGenres, tvRelease, tvTagline;
     private ImageView ivBack;
+    private RatingBar rbRating;
     private Button btHomepage;
 
     private void getData(String jsonData){
@@ -43,9 +47,26 @@ public class DetailActivity extends AppCompatActivity {
             release = film_item.getString("release_date");
             homepage = film_item.getString("homepage");
             tagline = film_item.getString("tagline");
+            rating = film_item.getDouble("vote_average")/2;
+
+            JSONArray genresJsonArray = film_item.getJSONArray("genres");
+            for (int i=0; i<genresJsonArray.length(); i++){
+                genres.add(genresJsonArray.getJSONObject(i).getString("name"));
+            }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -54,14 +75,15 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
 
         getSupportActionBar().setTitle(getIntent().getStringExtra("film_title"));
-        Log.d("title",getIntent().getStringExtra("film_title"));
 
         tvOverview = findViewById(R.id.tvOverview);
         tvOverview.setMovementMethod(new ScrollingMovementMethod());
+        tvGenres = findViewById(R.id.tvGenres);
         tvLanguage = findViewById(R.id.tvLanguage);
         tvRelease = findViewById(R.id.tvRelease);
         tvTagline = findViewById(R.id.tvTagline);
         ivBack = findViewById(R.id.ivBack);
+        rbRating  =findViewById(R.id.rbRating);
 
         btHomepage = findViewById(R.id.btHomepage);
         btHomepage.setOnClickListener(new View.OnClickListener() {
@@ -109,9 +131,17 @@ public class DetailActivity extends AppCompatActivity {
             tvOverview.setText(overview);
             tvLanguage.setText(language);
             tvRelease.setText(release);
+            String genre = "";
+            for (String i:genres){
+                if (genre=="")genre+=i;
+                else genre+=", "+i;
+            }
+            tvGenres.setText(genre);
             if (!tagline.isEmpty())
                 tvTagline.setText("\""+tagline+"\"");
             else tvTagline.setVisibility(View.GONE);
+
+            rbRating.setRating((float)rating);
             Picasso.with(context).load(image).placeholder(R.drawable.loading).into(ivBack);
         }
     }

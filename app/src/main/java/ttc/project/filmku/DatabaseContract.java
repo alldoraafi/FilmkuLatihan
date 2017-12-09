@@ -7,8 +7,9 @@ import android.provider.BaseColumns;
  */
 
 public class DatabaseContract {
-    public static final class FilmEntry implements BaseColumns{
-        public static final String TABLE_NAME = "film_table";
+    public static final class FavoritesEntry implements BaseColumns{
+        public static final String TABLE_NAME = "favorites_table";
         public static final String COLUMN_TITLE = "title";
+        public static final String COLUMN_ID = "id";
     }
 }

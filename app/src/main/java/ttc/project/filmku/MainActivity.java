@@ -2,6 +2,7 @@ package ttc.project.filmku;
 
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvFilm;
     ArrayList<String> titles = new ArrayList<>(), poster = new ArrayList<>(), movieID = new ArrayList<>();
     private FilmAdapter adapter;
+    private MenuItem menuTitle;
 
     //    TODO (5) Buat variable text view tv_total_result yg dibuat di layout
     //    TODO (6) Override onCreateOptionsMenu dan inflate menu yang dibuat
@@ -37,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+        menuTitle = menu.findItem(R.id.menuTitle);
         return true;
     }
 
@@ -61,11 +64,30 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==R.id.getNowPlaying){
-            Uri uri = NetworkUtils.buildMovieListUrl("popular");
-            new NetworkTask().execute(uri);
+        switch (item.getItemId()){
+            case R.id.getPopular:
+                menuTitle.setTitle("Popular Movies");
+                setContent("popular");
+                break;
+            case R.id.getNowPlaying:
+                menuTitle.setTitle("Now Playing");
+                setContent("now_playing");
+                break;
+            case R.id.getTopRated:
+                menuTitle.setTitle("Top Rated");
+                setContent("top_rated");
+                break;
+            case R.id.getUpcoming:
+                menuTitle.setTitle("Upcoming Movies");
+                setContent("upcoming");
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void setContent(String path){
+        Uri uri = NetworkUtils.buildMovieListUrl(path);
+        new NetworkTask().execute(uri);
     }
 
     class NetworkTask extends AsyncTask<Uri, Void, String>{
@@ -179,8 +201,7 @@ public class MainActivity extends AppCompatActivity {
         rvFilm.setLayoutManager(layoutManager);
         rvFilm.setAdapter(adapter);
 
-        Uri uri = NetworkUtils.buildMovieListUrl("now_playing");
-        new NetworkTask().execute(uri);
+        setContent("popular");
     }
 
     @Override

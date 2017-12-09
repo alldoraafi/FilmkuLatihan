@@ -2,7 +2,23 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/menuTitle"
+        android:title="Popular Movies"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/getPopular"
+        android:title="Popular Movies"
+        app:showAsAction="never"/>
+    <item
         android:id="@+id/getNowPlaying"
         android:title="Now Playing"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/getTopRated"
+        android:title="Top Rated"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/getUpcoming"
+        android:title="Upcoming"
+        app:showAsAction="never"/>
 </menu>
