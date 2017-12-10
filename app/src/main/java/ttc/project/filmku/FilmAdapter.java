@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -48,7 +49,8 @@ public class FilmAdapter extends RecyclerView.Adapter<FilmViewHolder> {
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mContext.startActivity(intent);
+                if (NetworkUtils.isNetworkAvailable(mContext))mContext.startActivity(intent);
+                else Toast.makeText(mContext, "No Internet, can't see details", Toast.LENGTH_SHORT).show();
             }
         });
     }
